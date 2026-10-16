@@ -1,0 +1,35 @@
+digraph DecisionTree {
+  graph [rankdir=TB, fontname="Helvetica", fontsize=22, labelloc=t, pad=0.4, nodesep=0.5, ranksep=0.45, bgcolor="white",
+         label="Decision Tree (CART) — How the tree is built\n "];
+  node  [fontname="Helvetica", fontsize=17, style="filled,rounded", shape=box, color="#334155", penwidth=1.6, margin="0.25,0.12"];
+  edge  [fontname="Helvetica", fontsize=15, color="#334155", penwidth=1.6];
+
+  start   [label="START\nAll training rows at the root node\n(depth = 0)", shape=oval, fillcolor="#DBEAFE"];
+  stop    [label="Stopping rule reached?\n• depth = max_depth\n• rows < min_samples_split\n• all targets are the same", shape=diamond, fillcolor="#FEF3C7", margin="0.05,0.05"];
+  leaf    [label="Make a LEAF\nRegression → predict the MEAN of the targets\nClassification → predict the MOST COMMON class", fillcolor="#DCFCE7"];
+  loop    [label="For EACH feature:\nsort its values and try every midpoint t\nbetween two neighbouring values", fillcolor="#F1F5F9"];
+  split   [label="Split rows in two:\nLEFT  = feature ≤ t      RIGHT = feature > t", fillcolor="#F1F5F9"];
+  minleaf [label="Both sides have at least\nmin_samples_leaf rows?", shape=diamond, fillcolor="#FEF3C7", margin="0.05,0.05"];
+  skip    [label="Skip this t", fillcolor="#FEE2E2"];
+  score   [label="Score the split\nRegression → SSE(left) + SSE(right)\nClassification → weighted Gini", fillcolor="#F1F5F9"];
+  best    [label="Keep the split with the LOWEST error\n(greedy: best choice right now)", fillcolor="#E0E7FF"];
+  found   [label="Was any valid split found?", shape=diamond, fillcolor="#FEF3C7", margin="0.05,0.05"];
+  node_   [label="Make a DECISION NODE\n\"Is feature ≤ t ?\"", fillcolor="#E0E7FF"];
+  recurse [label="Repeat the whole process on\nLEFT child and RIGHT child\n(depth + 1)", fillcolor="#DBEAFE"];
+  predict [label="PREDICT a new record:\nfollow the yes/no answers from the root\nuntil a leaf → return the leaf's value", shape=oval, fillcolor="#DCFCE7"];
+
+  start -> stop;
+  stop -> leaf    [label="  YES"];
+  stop -> loop    [label="  NO"];
+  loop -> split -> minleaf;
+  minleaf -> skip  [label="  NO"];
+  minleaf -> score [label="  YES"];
+  skip  -> loop    [label="next t", style=dashed, constraint=false];
+  score -> best;
+  best  -> found   [label="  all t tried"];
+  found -> leaf    [label="  NO"];
+  found -> node_   [label="  YES"];
+  node_ -> recurse;
+  recurse -> stop  [label="for each child", style=dashed, constraint=false];
+  leaf -> predict  [label="  tree finished", style=dashed];
+}
